@@ -11,4 +11,4 @@ artifacts
 contracts/*
 EventListenerService
 Logs
-scripts/
+scripts/*
