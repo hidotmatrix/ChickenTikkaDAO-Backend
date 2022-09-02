@@ -12,3 +12,4 @@ contracts/*
 EventListenerService
 Logs
 scripts/*
+temp/*
