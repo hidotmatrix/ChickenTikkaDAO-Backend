@@ -11,4 +11,4 @@ artifacts
 EventListenerService
 Logs
 scripts/*
-temp/*
+temp

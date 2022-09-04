@@ -4,18 +4,18 @@
   "description": "Cross chain platform to move assets across multiple chain",
   "main": "index.js",
   "scripts": {
-    "run:service": "nodemon app.js --exec node_modules/.bin/babel-node index.js"
+    "start": "nodemon index.js --exec node_modules/.bin/babel-node index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Mohsinsiddi/Cross-X-SmartContract-Backend.git"
+    "url": "git+https://github.com/hidotmatrix/RaspberryDAO-Backend.git"
   },
   "author": "Md Mohsin Siddiqui",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Mohsinsiddi/Cross-X-SmartContract-Backend/issues"
+    "url": "https://github.com/hidotmatrix/RaspberryDAO-Backend/issues"
   },
-  "homepage": "https://github.com/Mohsinsiddi/Cross-X-SmartContract-Backend#readme",
+  "homepage": "https://github.com/hidotmatrix/RaspberryDAO-Backend#readme",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.6",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",
@@ -46,8 +46,11 @@
     "@openzeppelin/contracts": "^4.6.0",
     "@truffle/hdwallet-provider": "^2.0.8",
     "axios": "^0.27.2",
+    "body-parser": "^1.20.0",
     "coingecko-api": "^1.0.10",
+    "cookie-parser": "^1.4.6",
     "express": "^4.18.1",
+    "mongoose": "^6.5.4",
     "nodemon": "^2.0.16",
     "uuid": "^8.3.2",
     "web3": "^1.7.3",
