@@ -1,16 +1,99 @@
-# RaspBerryDAO Godwoken Bridge - Smart Contracts - Backend(Bridge Service)
+# RaspberryDAO Godwoken Bridge - Smart Contracts - Backend(Bridge Service)
 
 # Sample Hardhat Project
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+## RaspberryDAO (Decentralised Automnomous Organisation)
 
-Try running some of the following tasks:
+RaspberryDAO is an ERC20 based governance mechanism.
 
-```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
+DAOs are an effective and safe way to work with like-minded folks around the globe.
+
+Think of them like an internet-native business that's collectively owned and managed by its members. They have built-in treasuries that no one has the authority to access without the approval of the group. Decisions are governed by proposals and voting to ensure everyone in the organization has a voice. [Read More About DAOs](https://ethereum.org/en/dao/)
+
+---
+
+### Clone repository
+
+```bash
+git clone https://github.com/hidotmatrix/RaspberryDAO-Backend.git
 ```
+
+---
+
+### Installation
+
+```bash
+cd RaspberryDAO-Backend
+npm install
+```
+
+---
+
+### Smart contract structure
+
+This repository uses openzeppelin's modular system of Bridge
+
+- [NFTCollectionBridgeWrapper](https://github.com/hidotmatrix/RaspberryDAO-Backend/blob/develop/contracts/BaseBrdige/NFTBridge.sol): The core contract that contains all the logic and primitives
+- [GodwokenNFT](https://github.com/hidotmatrix/RaspberryDAO-Backend/blob/develop/contracts/BaseBrdige/GodwokenNFT.sol): Allows multiple proposers and executors, in addition to the Governor itself.
+
+---
+
+### Smart contract Interaction
+
+#### Compile smart contracts
+
+```bash
+npx hardhat compile
+```
+
+#### Test smart contracts
+
+```bash
+npx hardhat test
+```
+
+#### Smart contract Deployment
+
+Create a .env file in the root directory and add the following variables
+
+- `MONGODB_URL = ""`
+- `RINKBEY_INFURA = ""`
+- `PORT = ""`
+Supported networks for deployment
+
+- `localhost`
+- `ropsten`
+- `rinkeby`
+- `goerli`
+- `polygon (mumbai testnet)`
+- `bsc testnet`
+
+##### Deploying GTP Token Smart Contract
+
+```bash
+npx hardhat run --network localhost scripts/deploy.js
+```
+
+#### Smart contract verification
+
+Add the following to your .env file
+
+> `ETHERSCAN_API_KEY = ""`
+
+```bash
+npx hardhat verify --network rinkbey DEPLOYED_CONTRACT_ADDRESS "Constructor argument 1"
+```
+
+---
+
+### Backend/Bridge Service Interaction
+
+```bash
+npm run start
+```
+
+#### Wallet support
+
+Used rainbowkit for the wallet Interaction. [rainbowkit docs](https://www.rainbowkit.com/docs/introduction)
+
 
