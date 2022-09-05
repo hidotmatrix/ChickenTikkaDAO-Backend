@@ -1,6 +1,6 @@
-# RaspberryDAO Godwoken Bridge - Smart Contracts - Backend(Bridge Service)
+## RaspberryDAO Godwoken Bridge - Smart Contracts - Backend(Bridge Service)
 
-# Sample Hardhat Project
+# Hardhat Project
 
 ## RaspberryDAO (Decentralised Automnomous Organisation)
 
