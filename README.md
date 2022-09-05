@@ -33,8 +33,8 @@ npm install
 
 This repository uses openzeppelin's modular system of Bridge
 
-- [NFTCollectionBridgeWrapper](https://github.com/hidotmatrix/RaspberryDAO-Backend/blob/develop/contracts/BaseBrdige/NFTBridge.sol): The core contract that contains all the logic and primitives
-- [GodwokenNFT](https://github.com/hidotmatrix/RaspberryDAO-Backend/blob/develop/contracts/BaseBrdige/GodwokenNFT.sol): Allows multiple proposers and executors, in addition to the Governor itself.
+- [NFTCollectionBridgeWrapper](https://github.com/hidotmatrix/RaspberryDAO-Backend/blob/develop/contracts/BaseBrdige/NFTBridge.sol): The bridge contract that contains all the logic and primitives for locking NFTs on ne chain and minting on Godwoken chain.
+- [GodwokenNFT](https://github.com/hidotmatrix/RaspberryDAO-Backend/blob/develop/contracts/BaseBrdige/GodwokenNFT.sol): A godwoken side mintable NFT smart contract
 
 ---
 
