@@ -2,7 +2,7 @@
 
 RaspberryDAO-Backend Project is a Backend of RaspberryDAO ecosystem which is used to listen real time events emitted when users swap their NFTs using [RaspberryDAO-User-UI](ttps://github.com/hidotmatrix/RaspberryDAO-User-UI). This project act as real time even listeners whenever someone lock their NFTs into the bridge smart contracts, and later on getting events emtited , this service will automatically mints GodwokenNFTs on the userwallet addresses on Godwoken L2 chain.
 
-## RaspberryDAO (Decentralised Automnomous Organisation)
+## RaspberryDAO
 
 RaspberryDAO is an ERC20 based governance mechanism.
 
