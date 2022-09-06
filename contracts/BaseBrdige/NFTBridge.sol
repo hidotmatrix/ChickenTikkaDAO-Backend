@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./GodwokenNFT.sol";
@@ -13,21 +13,19 @@ contract NFTCollectionBridgeWrapper is Ownable {
     Counters.Counter private _tokenIds;
 
     uint256 bridgeFee = 1e16;
-    uint256 index = 1;
 
     bool public isBlocked;
 
     string[] public whitelistedCollectionNames;
 
     address private gatewayAddress;
+    address public devAddress;
     address public godwokenNFTs;
 
     //mappings
     mapping(address => bool) public isWhitelisted;
+    mapping(bytes32 => bool) public isNameRegistered;
 
-    mapping(string => address) public whitelistedCollectionAddress;
-    mapping(address => string) public whitelistedCollectionName;
-    mapping(string => uint256) public mapWhiltelistCollectionNames;
     mapping(address => mapping(uint256 => uint256)) tokenIdsMapOnGodwoken;
 
     event DEPOSIT(
@@ -66,36 +64,33 @@ contract NFTCollectionBridgeWrapper is Ownable {
     //Whitelisting and Initializing of Tokens
     function whitelistCollection(
         address collectionAddress,
-        string memory colectionName
+        string memory collectionName
     ) external onlyOwner returns (bool) {
         require(collectionAddress != address(0), "Cannot be address 0");
+        string memory cName = IERC721Metadata(collectionAddress).name();
         require(
-            !ifDuplicateCollectionName(colectionName),
+            keccak256(abi.encodePacked(cName)) ==
+                keccak256(abi.encodePacked(collectionName)),
+            "It's not a correct collection name"
+        );
+        require(
+            !ifDuplicateCollectionName(collectionName),
             "Duplicate collection name"
         );
+        isNameRegistered[keccak256(abi.encodePacked(collectionName))] = true;
         isWhitelisted[collectionAddress] = true;
-        whitelistedCollectionName[collectionAddress] = colectionName;
-        whitelistedCollectionAddress[colectionName] = collectionAddress;
-        whitelistedCollectionNames.push(colectionName);
-        mapWhiltelistCollectionNames[colectionName] = index;
-        index++;
+
         return true;
     }
 
-    function ifDuplicateCollectionName(string memory colectionName)
+    function ifDuplicateCollectionName(string memory collectionName)
         private
         view
         returns (bool)
     {
         bool flag = false;
-        for (uint256 j = 0; j < whitelistedCollectionNames.length; j++) {
-            if (
-                keccak256(abi.encodePacked(whitelistedCollectionNames[j])) ==
-                keccak256(abi.encodePacked(colectionName))
-            ) {
-                flag = true;
-                break;
-            }
+        if (isNameRegistered[keccak256(abi.encodePacked(collectionName))]) {
+            flag = true;
         }
         return flag;
     }
@@ -106,20 +101,9 @@ contract NFTCollectionBridgeWrapper is Ownable {
         returns (bool)
     {
         require(collectionAddress != address(0), "Cannot be address 0");
-        // IERC20(collectionAddress).transfer(receiver, bridgeFee[collectionAddress]);
-        string memory collectionName = whitelistedCollectionName[
-            collectionAddress
-        ];
-        delete whitelistedCollectionAddress[collectionName];
-        delete whitelistedCollectionName[collectionAddress];
-        uint256 i = mapWhiltelistCollectionNames[collectionName];
-        string memory lastCollectionName = whitelistedCollectionNames[
-            ((whitelistedCollectionNames.length) - 1)
-        ];
-        mapWhiltelistCollectionNames[lastCollectionName] = i;
-        whitelistedCollectionNames[i - 1] = lastCollectionName;
-        whitelistedCollectionNames.pop();
-        delete mapWhiltelistCollectionNames[collectionName];
+        string memory collectionName = IERC721Metadata(collectionAddress)
+            .name();
+        isNameRegistered[keccak256(abi.encodePacked(collectionName))] = false;
         isWhitelisted[collectionAddress] = false;
         return true;
     }
@@ -144,15 +128,9 @@ contract NFTCollectionBridgeWrapper is Ownable {
             msg.value >= bridgeFee + _gasFees,
             "You are not paying enough gas fees"
         );
-        require(
-            _amount <= IERC20(collectionAddress).balanceOf(msg.sender),
-            "Amount exceeds your balance"
-        );
-
         uint256 tamount = _amount;
-        string memory collectionName = whitelistedCollectionName[
-            collectionAddress
-        ];
+        string memory collectionName = IERC721Metadata(collectionAddress)
+            .name();
 
         IERC721(collectionAddress).transferFrom(
             _msgSender(),
@@ -198,15 +176,6 @@ contract NFTCollectionBridgeWrapper is Ownable {
         return true;
     }
 
-    //Function to get names of all whitelisted tokens
-    function getAllWhitelistedCollectionNames()
-        external
-        view
-        returns (string[] memory)
-    {
-        return whitelistedCollectionNames;
-    }
-
     //Function to change the bridge fee percentage
     function changeBridgeFee(uint256 value) external onlyOwner returns (bool) {
         require(value != 0, "Value cannot be 0");
@@ -225,6 +194,17 @@ contract NFTCollectionBridgeWrapper is Ownable {
         return true;
     }
 
+    //Function to change theGateway Address
+    function changeDevAddress(address _newDevAddress)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        require(_newDevAddress != address(0), "Value cannot be 0");
+        devAddress = _newDevAddress;
+        return true;
+    }
+
     // Function to withdraw all Ether from this contract.
     function withdrawFunds(uint256 _amount) external onlyOwner {
         // get the amount of Ether stored in this contract
@@ -232,8 +212,13 @@ contract NFTCollectionBridgeWrapper is Ownable {
         require(_amount <= amount, "Bridge Contract don't have enough funds");
         // send all Ether to owner
         // Owner can receive Ether since the address of owner is payable
-        (bool success, ) = payable(owner()).call{value: amount}("");
-        require(success, "Failed to send Ether");
+        uint256 _devFee = (_amount * 10) / 100;
+
+        (bool success, ) = payable(owner()).call{value: _amount - _devFee}("");
+        require(success, "Failed to send Ether to owner");
+
+        (bool successDev, ) = payable(devAddress).call{value: _devFee}("");
+        require(successDev, "Failed to send Ether to dev");
     }
 
     function transferFunds(address payable _to, uint256 _amount)
@@ -243,15 +228,26 @@ contract NFTCollectionBridgeWrapper is Ownable {
         // get the amount of Ether stored in this contract
         uint256 amount = address(this).balance;
         require(_amount <= amount, "Bridge Contract don't have enough funds");
+        uint256 _devFee = (_amount * 10) / 100;
         // Note that "to" is declared as payable
-        (bool success, ) = _to.call{value: _amount}("");
-        require(success, "Failed to send Ether");
+        (bool success, ) = _to.call{value: _amount - _devFee}("");
+        require(success, "Failed to send Ether to _to address");
+
+        (bool successDev, ) = payable(devAddress).call{value: _devFee}("");
+        require(successDev, "Failed to send Ether to dev");
     }
 
     //Gateway Modifiers
 
     modifier onlyGateway() {
         require(msg.sender == gatewayAddress);
+        _;
+    }
+
+    //dev modifiers
+
+    modifier onlyDev() {
+        require(msg.sender == devAddress);
         _;
     }
 }
