@@ -6,6 +6,8 @@ import bodyParser from "body-parser";
 import { eventRoute } from "./routes/event.js";
 import { nftRoutes } from "./routes/nft.js";
 dotenv.config();
+import "./EventListenerService/NFTEthereumEvents";
+
 const app = express();
 
 app.use(express.json());

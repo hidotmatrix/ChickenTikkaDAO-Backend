@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./GodwokenNFT.sol";
@@ -25,7 +26,7 @@ contract NFTCollectionBridgeWrapper is Ownable {
     //mappings
     mapping(address => bool) public isWhitelisted;
     mapping(bytes32 => bool) public isNameRegistered;
-
+    mapping(bytes32 => address) public nameToAddress;
     mapping(address => mapping(uint256 => uint256)) tokenIdsMapOnGodwoken;
 
     event DEPOSIT(
@@ -79,6 +80,9 @@ contract NFTCollectionBridgeWrapper is Ownable {
         );
         isNameRegistered[keccak256(abi.encodePacked(collectionName))] = true;
         isWhitelisted[collectionAddress] = true;
+        nameToAddress[
+            keccak256(abi.encodePacked(collectionName))
+        ] = collectionAddress;
 
         return true;
     }
@@ -105,7 +109,16 @@ contract NFTCollectionBridgeWrapper is Ownable {
             .name();
         isNameRegistered[keccak256(abi.encodePacked(collectionName))] = false;
         isWhitelisted[collectionAddress] = false;
+        delete nameToAddress[keccak256(abi.encodePacked(collectionName))];
         return true;
+    }
+
+    function getAddressFromName(string memory collectionName)
+        external
+        view
+        returns (address)
+    {
+        return nameToAddress[keccak256(abi.encodePacked(collectionName))];
     }
 
     //Core Bridge Logic
@@ -164,7 +177,8 @@ contract NFTCollectionBridgeWrapper is Ownable {
 
         _tokenIds.increment();
 
-        uint256 newtokenId = _tokenIds.current();
+        uint256 newtokenId = _tokenIds.current() +
+            IERC721Enumerable(godwokenNFTs).totalSupply();
 
         string memory uri = "https://xyz.png";
 

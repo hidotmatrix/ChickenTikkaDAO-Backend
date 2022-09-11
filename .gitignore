@@ -8,7 +8,6 @@ typechain
 cache
 artifacts
 
-EventListenerService
 Logs
 scripts/*
 temp
