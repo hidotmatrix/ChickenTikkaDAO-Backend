@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { MongoClient, ServerApiVersion } from "mongodb";
 import NFTBridge from "../artifacts/contracts/BaseBrdige/NFTBridge.sol/NFTCollectionBridgeWrapper.json";
 import {
   web3EthereumProvider,
@@ -30,6 +31,12 @@ const godwokenBridgeInstance = new web3Godwoken.eth.Contract(
   NFTBridge.abi,
   NFT_BRDIGE_GODWOKEN
 );
+
+const client = new MongoClient(process.env.MONGODB_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverApi: ServerApiVersion.v1,
+});
 
 ETHNFTBridgeInstance.events
   .DEPOSIT({ fromBlock: "0" })
@@ -72,7 +79,8 @@ ETHNFTBridgeInstance.events
           web3Godwoken.eth.getGasPrice(),
           tx.estimateGas({ from: adminGodwoken }),
         ]);
-        console.log("GasPrice and GasCost", gasPrice, gasCost);
+        console.log("GasPrice on Godwoken L2 chain", gasPrice);
+        console.log("GasCost on Godwoken L2 chain", gasCost);
 
         const data = tx.encodeABI();
 
@@ -85,7 +93,40 @@ ETHNFTBridgeInstance.events
         };
 
         const receipt = await web3Godwoken.eth.sendTransaction(txData);
+        console.log("Receipt", receipt);
 
+        try {
+          if (receipt.status) {
+            await client.connect();
+            console.log("Connected correctly to server");
+            const db = client.db(process.env.DB_NAME);
+            // Use the collection "people"
+            const col = db.collection("crosschain_nfts");
+            // Construct a document
+            let crosschainNFTDocument = {
+              from: sender,
+              to: sender, // May 23, 1912
+              collectionAddress: collectionAddress,
+              collectionName: collectionName,
+              tokenId: tokenID,
+              count: tamount,
+              metatdata_uri: uri,
+              fromChain: "4",
+              toChain: destinationChainId,
+              timestamp: Date.now(),
+            };
+            // Insert a single document, wait for promise so we can read it back
+            const p = await col.insertOne(crosschainNFTDocument);
+            // Find one document
+            const myDoc = await col.findOne();
+            // Print to the console
+            console.log(myDoc);
+          }
+        } catch (err) {
+          console.log(err.stack);
+        } finally {
+          await client.close();
+        }
         console.log(`Transaction hash: ${receipt.transactionHash}`);
         console.log(`
             Processed Cross chain NFT transfer:
