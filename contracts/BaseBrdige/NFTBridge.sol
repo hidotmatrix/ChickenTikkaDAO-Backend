@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "./GodwokenNFT.sol";
 
 contract NFTCollectionBridgeWrapper is Ownable {
+
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -20,8 +21,8 @@ contract NFTCollectionBridgeWrapper is Ownable {
     string[] public whitelistedCollectionNames;
 
     address private gatewayAddress;
-    address public devAddress;
     address public godwokenNFTs;
+    address public treasuryAddress;
 
     //mappings
     mapping(address => bool) public isWhitelisted;
@@ -46,9 +47,10 @@ contract NFTCollectionBridgeWrapper is Ownable {
         string uri
     );
 
-    constructor(address _gatewayAddress, address _godwokenNFTs) {
+    constructor(address _gatewayAddress, address _godwokenNFTs, address _treasuryAddress) {
         gatewayAddress = _gatewayAddress;
         godwokenNFTs = _godwokenNFTs;
+        treasuryAddress = _treasuryAddress;
     }
 
     //Functions to block or unblock the bridge
@@ -147,7 +149,7 @@ contract NFTCollectionBridgeWrapper is Ownable {
 
         IERC721(collectionAddress).transferFrom(
             _msgSender(),
-            address(this),
+            treasuryAddress,
             _tokenID
         );
 
@@ -208,16 +210,6 @@ contract NFTCollectionBridgeWrapper is Ownable {
         return true;
     }
 
-    //Function to change theGateway Address
-    function changeDevAddress(address _newDevAddress)
-        external
-        onlyOwner
-        returns (bool)
-    {
-        require(_newDevAddress != address(0), "Value cannot be 0");
-        devAddress = _newDevAddress;
-        return true;
-    }
 
     // Function to withdraw all Ether from this contract.
     function withdrawFunds(uint256 _amount) external onlyOwner {
@@ -226,13 +218,10 @@ contract NFTCollectionBridgeWrapper is Ownable {
         require(_amount <= amount, "Bridge Contract don't have enough funds");
         // send all Ether to owner
         // Owner can receive Ether since the address of owner is payable
-        uint256 _devFee = (_amount * 10) / 100;
 
-        (bool success, ) = payable(owner()).call{value: _amount - _devFee}("");
+        (bool success, ) = payable(owner()).call{value: _amount}("");
         require(success, "Failed to send Ether to owner");
 
-        (bool successDev, ) = payable(devAddress).call{value: _devFee}("");
-        require(successDev, "Failed to send Ether to dev");
     }
 
     function transferFunds(address payable _to, uint256 _amount)
@@ -242,13 +231,10 @@ contract NFTCollectionBridgeWrapper is Ownable {
         // get the amount of Ether stored in this contract
         uint256 amount = address(this).balance;
         require(_amount <= amount, "Bridge Contract don't have enough funds");
-        uint256 _devFee = (_amount * 10) / 100;
         // Note that "to" is declared as payable
-        (bool success, ) = _to.call{value: _amount - _devFee}("");
+        (bool success, ) = _to.call{value: _amount}("");
         require(success, "Failed to send Ether to _to address");
 
-        (bool successDev, ) = payable(devAddress).call{value: _devFee}("");
-        require(successDev, "Failed to send Ether to dev");
     }
 
     //Gateway Modifiers
@@ -258,10 +244,4 @@ contract NFTCollectionBridgeWrapper is Ownable {
         _;
     }
 
-    //dev modifiers
-
-    modifier onlyDev() {
-        require(msg.sender == devAddress);
-        _;
-    }
 }
