@@ -13,13 +13,33 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
-  // We get the contract to deploy
-  const BridgeWrapper = await hre.ethers.getContractFactory("BridgeWrapperPoly");
-  const bridgeWrapper = await BridgeWrapper.deploy();
+  // We get the GodwokenNFT contract to deploy
+  const GodwokenNFT = await hre.ethers.getContractFactory("GodwokenNFT");
+  const godwokenNFT = await GodwokenNFT.deploy();
 
-  await bridgeWrapper.deployed();
+  await godwokenNFT.deployed();
 
-  console.log("BridgeWrapper Smart Contract deployed to:", bridgeWrapper.address);
+  console.log("GodwokenNFT Smart Contract deployed to:", godwokenNFT.address);
+
+  const GATEWAY_ADDRESS = process.env.GATEWAY_ADDRESS;
+  const TREASURY_ADDRESS = process.env.TREASURY_ADDRESS;
+
+  // We get the NFTCollectionBridgeWrapper contract to deploy
+  const NFTCollectionBridgeWrapper = await hre.ethers.getContractFactory(
+    "NFTCollectionBridgeWrapper"
+  );
+  const nftCollectionBridgeWrapper = await NFTCollectionBridgeWrapper.deploy(
+    GATEWAY_ADDRESS,
+    godwokenNFT.address,
+    TREASURY_ADDRESS
+  );
+
+  await nftCollectionBridgeWrapper.deployed();
+
+  console.log(
+    "NFTCollectionBridgeWrapper Smart Contract deployed to:",
+    nftCollectionBridgeWrapper.address
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -5,31 +5,22 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./GodwokenNFT.sol";
 
 contract NFTCollectionBridgeWrapper is Ownable {
-
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
-
+  
     uint256 bridgeFee = 1e16;
 
     bool public isBlocked;
-
-    string[] public whitelistedCollectionNames;
 
     address private gatewayAddress;
     address public godwokenNFTs;
     address public treasuryAddress;
 
     //mappings
-    mapping(address => bool) public isWhitelisted;
-    mapping(bytes32 => bool) public isNameRegistered;
-    mapping(bytes32 => address) public nameToAddress;
-    mapping(address => mapping(uint256 => uint256)) tokenIdsMapOnGodwoken;
-
+    mapping(address => mapping(uint256 => uint256)) public tokenIdsMapOnGodwoken;
+    
     event DEPOSIT(
         uint256 tamount,
         uint256 tokenID,
@@ -39,12 +30,12 @@ contract NFTCollectionBridgeWrapper is Ownable {
         string collectionName,
         uint256 destinationChainId
     );
+
     event WITHDRAW(
         uint256 ethtokenID,
         uint256 godowkenTokenId,
         address sender,
-        address tokenAddress,
-        string uri
+        address tokenAddress
     );
 
     constructor(address _gatewayAddress, address _godwokenNFTs, address _treasuryAddress) {
@@ -64,64 +55,6 @@ contract NFTCollectionBridgeWrapper is Ownable {
         return true;
     }
 
-    //Whitelisting and Initializing of Tokens
-    function whitelistCollection(
-        address collectionAddress,
-        string memory collectionName
-    ) external onlyOwner returns (bool) {
-        require(collectionAddress != address(0), "Cannot be address 0");
-        string memory cName = IERC721Metadata(collectionAddress).name();
-        require(
-            keccak256(abi.encodePacked(cName)) ==
-                keccak256(abi.encodePacked(collectionName)),
-            "It's not a correct collection name"
-        );
-        require(
-            !ifDuplicateCollectionName(collectionName),
-            "Duplicate collection name"
-        );
-        isNameRegistered[keccak256(abi.encodePacked(collectionName))] = true;
-        isWhitelisted[collectionAddress] = true;
-        nameToAddress[
-            keccak256(abi.encodePacked(collectionName))
-        ] = collectionAddress;
-
-        return true;
-    }
-
-    function ifDuplicateCollectionName(string memory collectionName)
-        private
-        view
-        returns (bool)
-    {
-        bool flag = false;
-        if (isNameRegistered[keccak256(abi.encodePacked(collectionName))]) {
-            flag = true;
-        }
-        return flag;
-    }
-
-    function removeCollectionFromWhitelist(address collectionAddress)
-        external
-        onlyOwner
-        returns (bool)
-    {
-        require(collectionAddress != address(0), "Cannot be address 0");
-        string memory collectionName = IERC721Metadata(collectionAddress)
-            .name();
-        isNameRegistered[keccak256(abi.encodePacked(collectionName))] = false;
-        isWhitelisted[collectionAddress] = false;
-        delete nameToAddress[keccak256(abi.encodePacked(collectionName))];
-        return true;
-    }
-
-    function getAddressFromName(string memory collectionName)
-        external
-        view
-        returns (address)
-    {
-        return nameToAddress[keccak256(abi.encodePacked(collectionName))];
-    }
 
     //Core Bridge Logic
     function deposit(
@@ -136,14 +69,9 @@ contract NFTCollectionBridgeWrapper is Ownable {
         require(collectionAddress != address(0), "Cannot be address 0");
         require(isBlocked != true, "Bridge is blocked right now");
         require(
-            isWhitelisted[collectionAddress] == true,
-            "This token is not Whitelisted on our platform"
-        );
-        require(
             msg.value >= bridgeFee + _gasFees,
             "You are not paying enough gas fees"
         );
-        uint256 tamount = _amount;
         string memory collectionName = IERC721Metadata(collectionAddress)
             .name();
 
@@ -154,7 +82,7 @@ contract NFTCollectionBridgeWrapper is Ownable {
         );
 
         emit DEPOSIT(
-            tamount,
+            _amount,
             _tokenID,
             msg.sender,
             collectionAddress,
@@ -172,23 +100,14 @@ contract NFTCollectionBridgeWrapper is Ownable {
     ) external onlyGateway returns (bool) {
         require(collectionAddress != address(0), "Cannot be address 0");
         require(receiver != address(0), "Cannot be address 0");
-        require(
-            isWhitelisted[collectionAddress] == true,
-            "This Collection is not Whitelisted on our platform"
-        );
 
-        _tokenIds.increment();
+        uint256 newtokenId = IERC721Enumerable(godwokenNFTs).totalSupply() + 1;
 
-        uint256 newtokenId = _tokenIds.current() +
-            IERC721Enumerable(godwokenNFTs).totalSupply();
-
-        string memory uri = "https://xyz.png";
-
-        GodwokenNFT(godwokenNFTs).safeMint(receiver, newtokenId, uri);
+        GodwokenNFT(godwokenNFTs).safeMint(receiver);
 
         tokenIdsMapOnGodwoken[collectionAddress][_tokenID] = newtokenId;
 
-        emit WITHDRAW(_tokenID, newtokenId, receiver, collectionAddress, uri);
+        emit WITHDRAW(_tokenID, newtokenId, receiver, collectionAddress);
         return true;
     }
 
@@ -236,6 +155,14 @@ contract NFTCollectionBridgeWrapper is Ownable {
         require(success, "Failed to send Ether to _to address");
 
     }
+
+      // function to withdraw NFTs from treasury
+    function withdrawNFTs(uint256[] calldata _tokenIds,address[] calldata _nftAddresses, address _recepient) external onlyOwner {
+        for(uint256 i=0;i<_tokenIds.length;i++){
+          IERC721(_nftAddresses[i]).transferFrom(address(this), _recepient , _tokenIds[i]);
+        }
+    }
+
 
     //Gateway Modifiers
 
