@@ -5,7 +5,7 @@ import {
   web3EthereumProvider,
   web3GodwokenProviderHTTP,
 } from "./config/config";
-import { NFT_BRDIGE_RINKBEY, NFT_BRDIGE_GODWOKEN } from "./constants/constants";
+import { NFT_BRDIGE_POLYGON, NFT_BRDIGE_GODWOKEN } from "./constants/constants";
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ const web3Ethereum = web3EthereumProvider();
 
 const ETHNFTBridgeInstance = new web3Ethereum.eth.Contract(
   NFTBridge.abi,
-  NFT_BRDIGE_RINKBEY
+  NFT_BRDIGE_POLYGON
 );
 
 // GODWOKEN PROVIDER && GODWOKEN_BRIDGE CONTRACT INIT
