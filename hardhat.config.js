@@ -22,6 +22,12 @@ module.exports = {
       chainId: 80001,
       accounts: [process.env.DEPLOYER_PRIV_KEY],
     },
+    godwoken: {
+      allowUnlimitedContractSize: true,
+      url: process.env.GODWOKEN_RPC_URL,
+      chainId: 71401,
+      accounts: [process.env.DEPLOYER_PRIV_KEY],
+    },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,

@@ -20,12 +20,12 @@ async function main() {
   await godwokenNFT.deployed();
 
   console.log(
-    "GodwokenNFT Smart Contract deployed on Polygon to:",
+    "GodwokenNFT Smart Contract deployed on Godwoken at:",
     godwokenNFT.address
   );
 
   const GATEWAY_ADDRESS = process.env.GATEWAY_ADDRESS;
-  const TREASURY_ADDRESS = process.env.POLYGON_DAO_TREASURY_ADDRESS;
+  const TREASURY_ADDRESS = process.env.GODWOKEN_TREASURY_ADDRESS;
 
   // We get the NFTCollectionBridgeWrapper contract to deploy
   const NFTCollectionBridgeWrapper = await hre.ethers.getContractFactory(
@@ -40,7 +40,7 @@ async function main() {
   await nftCollectionBridgeWrapper.deployed();
 
   console.log(
-    "NFTCollectionBridgeWrapper Smart Contract deployed on Polygon at:",
+    "NFTCollectionBridgeWrapper Smart Contract deployed on Godwoken at:",
     nftCollectionBridgeWrapper.address
   );
 }
