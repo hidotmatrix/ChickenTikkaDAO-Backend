@@ -39,7 +39,7 @@ const client = new MongoClient(process.env.MONGODB_URL, {
 });
 
 ETHNFTBridgeInstance.events
-  .DEPOSIT({ fromBlock: "0" })
+  .DEPOSIT({ fromBlock: process.env.START_BLOCK_NUMBER })
   .on("data", async (event) => {
     try {
       console.log("Ethereum NFT Deposit event catched");
@@ -55,6 +55,8 @@ ETHNFTBridgeInstance.events
         destinationChainId,
       } = event.returnValues;
 
+      let mappedCollectionAddressOnGodwoken = collectionAddress;
+
       tamount = tamount.replace(/\s+/g, "");
       sender = sender.replace(/\s+/g, "");
       collectionAddress = collectionAddress.replace(/\s+/g, "");
@@ -64,14 +66,10 @@ ETHNFTBridgeInstance.events
           collectionName +
             " token transfer started from contract owner to user on Ethereum to Binance."
         );
-        let GodwokenNFTTokenAddress = await godwokenBridgeInstance.methods
-          .getAddressFromName(collectionName)
-          .call();
-        console.log(GodwokenNFTTokenAddress);
 
         const tx = godwokenBridgeInstance.methods.mintOnGodwoken(
           tokenID,
-          GodwokenNFTTokenAddress,
+          mappedCollectionAddressOnGodwoken,
           sender
         );
 
@@ -111,7 +109,7 @@ ETHNFTBridgeInstance.events
               tokenId: tokenID,
               count: tamount,
               metatdata_uri: uri,
-              fromChain: "4",
+              fromChain: "80001",
               toChain: destinationChainId,
               timestamp: Date.now(),
             };

@@ -43,6 +43,12 @@ async function main() {
     "NFTCollectionBridgeWrapper Smart Contract deployed on Godwoken at:",
     nftCollectionBridgeWrapper.address
   );
+
+  const tx = await godwokenNFT.addMinterRole(
+    nftCollectionBridgeWrapper.address
+  );
+
+  console.log("Add Minter for Bride contracts tx hash", tx.hash);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

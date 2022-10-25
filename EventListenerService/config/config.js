@@ -9,7 +9,7 @@ dotenv.config();
 function web3EThProviderHTTP() {
   const provider = new HDWalletProvider({
     mnemonic: process.env.MNEMONICS,
-    providerOrUrl: process.env.RINKBEY_HTTP_INFURA,
+    providerOrUrl: process.env.ALCHEMY_POLYGON_MUMBAI_API_URL_HTTP,
     pollingInterval: 8000,
   });
   return new Web3(provider);
@@ -18,7 +18,7 @@ function web3EThProviderHTTP() {
 function web3ETHprovider() {
   const provider = new HDWalletProvider({
     mnemonic: process.env.MNEMONICS,
-    providerOrUrl: process.env.RINKBEY_INFURA,
+    providerOrUrl: process.env.ALCHEMY_POLYGON_MUMBAI_API_URL_WS,
     pollingInterval: 8000,
   });
   return new Web3(provider);
@@ -40,7 +40,7 @@ function web3EthereumProvider() {
       onTimeout: false,
     },
   };
-  return new Web3(new Web3WsProvider(process.env.RINKBEY_INFURA, options));
+  return new Web3(new Web3WsProvider(process.env.ALCHEMY_POLYGON_MUMBAI_API_URL_WS, options));
 }
 
 // WEB3 providers for catching events on Godwoken
