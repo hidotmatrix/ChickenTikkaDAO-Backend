@@ -37,7 +37,11 @@ const client = new MongoClient(process.env.MONGODB_URL, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-const blockNumber = await web3Ethereum.eth.getBlockNumber();
+let blockNumber;
+async function fetchBlockNumber() {
+  blockNumber = await web3Ethereum.eth.getBlockNumber();
+}
+fetchBlockNumber();
 ETHNFTBridgeInstance.events
   .DEPOSIT({ fromBlock: blockNumber })
   .on("data", async (event) => {
