@@ -27,22 +27,24 @@ function web3ETHprovider() {
 function web3EthereumProvider() {
   const options = {
     timeout: 30000, // ms
-    // clientConfig: {
-    //   // Useful to keep a connection alive
-    //   keepalive: true,
-    //   keepaliveInterval: 60000 // ms
-    // },
+    clientConfig: {
+      // Useful to keep a connection alive
+      keepalive: true,
+      keepaliveInterval: 100000, // ms
+    },
     // Enable auto reconnection
     reconnect: {
       auto: true,
       delay: 5000, // ms
-      maxAttempts: 5,
+      maxAttempts: 50,
       onTimeout: false,
     },
     networkCheckTimeout: 10000,
-    timeoutBlocks: 200
+    timeoutBlocks: 200,
   };
-  return new Web3(new Web3WsProvider(process.env.ALCHEMY_POLYGON_MUMBAI_API_URL_WS, options));
+  return new Web3(
+    new Web3WsProvider(process.env.ALCHEMY_POLYGON_MUMBAI_API_URL_WS, options)
+  );
 }
 
 // WEB3 providers for catching events on Godwoken
