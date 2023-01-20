@@ -31,7 +31,7 @@ app.use(function (req, res, next) {
 app.use(eventRoute);
 app.use(nftRoutes);
 
-app.get("/", function(req, res) {
+app.get("/", function (req, res) {
   //when we get an http get request to the root/homepage
   res.send("Bridge Service is up and running!");
 });

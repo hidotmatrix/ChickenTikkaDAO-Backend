@@ -156,6 +156,6 @@ fetchBlockNumber();
 try {
   eventListener();
 } catch (error) {
-  console.log("Error", error);
   eventListener();
+  console.log("Error", error);
 }

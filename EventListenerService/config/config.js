@@ -30,17 +30,17 @@ function web3EthereumProvider() {
     clientConfig: {
       // Useful to keep a connection alive
       keepalive: true,
-      keepaliveInterval: 100000, // ms
+      keepaliveInterval: 60000, // ms
     },
     // Enable auto reconnection
     reconnect: {
       auto: true,
       delay: 5000, // ms
-      maxAttempts: 50,
-      onTimeout: false,
+      maxAttempts: 5,
+      onTimeout: true,
     },
-    networkCheckTimeout: 10000,
-    timeoutBlocks: 200,
+    networkCheckTimeout: 20000,
+    timeoutBlocks: 1500,
   };
   return new Web3(
     new Web3WsProvider(process.env.ALCHEMY_POLYGON_MUMBAI_API_URL_WS, options)
