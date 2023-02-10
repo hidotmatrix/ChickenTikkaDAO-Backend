@@ -9,153 +9,163 @@ import { NFT_BRDIGE_POLYGON, NFT_BRDIGE_GODWOKEN } from "./constants/constants";
 
 dotenv.config();
 
-// ADMIN CREDENTIALS
-const adminPrivKey = process.env.PRIVATE_KEY;
-
-//ETHEREUM PROVIDER && ETH_BRIDGE CONTRACT INIT FOR EVENTS
-
-const web3Ethereum = web3EthereumProvider();
-
-const ETHNFTBridgeInstance = new web3Ethereum.eth.Contract(
-  NFTBridge.abi,
-  NFT_BRDIGE_POLYGON
-);
-
-// GODWOKEN PROVIDER && GODWOKEN_BRIDGE CONTRACT INIT
-const web3Godwoken = web3GodwokenProviderHTTP();
-
-const { address: adminGodwoken } =
-  web3Godwoken.eth.accounts.wallet.add(adminPrivKey);
-
-const godwokenBridgeInstance = new web3Godwoken.eth.Contract(
-  NFTBridge.abi,
-  NFT_BRDIGE_GODWOKEN
-);
-
-const client = new MongoClient(process.env.MONGODB_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverApi: ServerApiVersion.v1,
-});
-let blockNumber;
-async function fetchBlockNumber() {
-  blockNumber = await web3Ethereum.eth.getBlockNumber();
-  console.log("Block Number", blockNumber);
-}
-
 async function eventListener() {
-  ETHNFTBridgeInstance.events
-    .DEPOSIT({ fromBlock: blockNumber })
-    .on("data", async (event) => {
-      try {
-        console.log("Ethereum NFT Deposit event catched");
-        //console.log(event.returnValues);
+  try {
+    // ADMIN CREDENTIALS
+    const adminPrivKey = process.env.PRIVATE_KEY;
 
-        let {
-          tamount,
-          tokenID,
-          sender,
-          collectionAddress,
-          uri,
-          collectionName,
-          destinationChainId,
-        } = event.returnValues;
+    //ETHEREUM PROVIDER && ETH_BRIDGE CONTRACT INIT FOR EVENTS
 
-        let mappedCollectionAddressOnGodwoken = collectionAddress;
+    const web3Ethereum = web3EthereumProvider();
 
-        tamount = tamount.replace(/\s+/g, "");
-        sender = sender.replace(/\s+/g, "");
-        collectionAddress = collectionAddress.replace(/\s+/g, "");
+    const ETHNFTBridgeInstance = new web3Ethereum.eth.Contract(
+      NFTBridge.abi,
+      NFT_BRDIGE_POLYGON
+    );
 
-        if (destinationChainId == "71401") {
-          console.log(
-            collectionName +
-              " token transfer started from contract owner to user on Ethereum to Binance."
-          );
+    // GODWOKEN PROVIDER && GODWOKEN_BRIDGE CONTRACT INIT
+    const web3Godwoken = web3GodwokenProviderHTTP();
 
-          const tx = godwokenBridgeInstance.methods.mintOnGodwoken(
+    const { address: adminGodwoken } =
+      web3Godwoken.eth.accounts.wallet.add(adminPrivKey);
+
+    const godwokenBridgeInstance = new web3Godwoken.eth.Contract(
+      NFTBridge.abi,
+      NFT_BRDIGE_GODWOKEN
+    );
+
+    const client = new MongoClient(process.env.MONGODB_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverApi: ServerApiVersion.v1,
+    });
+
+    console.log("Event Listener started!");
+    let blockNumber = await web3Ethereum.eth.getBlockNumber();
+    ETHNFTBridgeInstance.events
+      .DEPOSIT({ fromBlock: blockNumber })
+      .on("data", async (event) => {
+        try {
+          console.log("Ethereum NFT Deposit event catched");
+          //console.log(event.returnValues);
+
+          let {
+            tamount,
             tokenID,
-            mappedCollectionAddressOnGodwoken,
-            sender
-          );
+            sender,
+            collectionAddress,
+            uri,
+            collectionName,
+            destinationChainId,
+          } = event.returnValues;
 
-          const [gasPrice, gasCost] = await Promise.all([
-            web3Godwoken.eth.getGasPrice(),
-            tx.estimateGas({ from: adminGodwoken }),
-          ]);
-          console.log("GasPrice on Godwoken L2 chain", gasPrice);
-          console.log("GasCost on Godwoken L2 chain", gasCost);
+          let mappedCollectionAddressOnGodwoken = collectionAddress;
 
-          const data = tx.encodeABI();
+          tamount = tamount.replace(/\s+/g, "");
+          sender = sender.replace(/\s+/g, "");
+          collectionAddress = collectionAddress.replace(/\s+/g, "");
 
-          const txData = {
-            from: adminGodwoken,
-            to: godwokenBridgeInstance.options.address,
-            data,
-            gas: gasCost,
-            gasPrice,
-          };
+          if (destinationChainId == "71401") {
+            console.log(
+              collectionName +
+                " token transfer started from contract owner to user on Ethereum to Binance."
+            );
 
-          const receipt = await web3Godwoken.eth.sendTransaction(txData);
-          //console.log("Receipt", receipt);
+            const tx = godwokenBridgeInstance.methods.mintOnGodwoken(
+              tokenID,
+              mappedCollectionAddressOnGodwoken,
+              sender
+            );
 
-          try {
-            if (receipt.status) {
-              await client.connect();
-              //console.log("Connected correctly to server");
-              const db = client.db(process.env.DB_NAME);
-              // Use the collection "people"
-              const col = db.collection("crosschain_nfts");
-              // Construct a document
-              let crosschainNFTDocument = {
-                from: sender,
-                to: sender, // May 23, 1912
-                collectionAddress: collectionAddress,
-                collectionName: collectionName,
-                tokenId: tokenID,
-                count: tamount,
-                metatdata_uri: uri,
-                fromChain: "80001",
-                toChain: destinationChainId,
-                timestamp: Date.now(),
-              };
-              // Insert a single document, wait for promise so we can read it back
-              const p = await col.insertOne(crosschainNFTDocument);
-              // Find one document
-              const myDoc = await col.findOne();
-              // Print to the console
-              //console.log(myDoc);
+            const [gasPrice, gasCost] = await Promise.all([
+              web3Godwoken.eth.getGasPrice(),
+              tx.estimateGas({ from: adminGodwoken }),
+            ]);
+            console.log("GasPrice on Godwoken L2 chain", gasPrice);
+            console.log("GasCost on Godwoken L2 chain", gasCost);
+
+            const data = tx.encodeABI();
+
+            const txData = {
+              from: adminGodwoken,
+              to: godwokenBridgeInstance.options.address,
+              data,
+              gas: gasCost,
+              gasPrice,
+            };
+
+            const receipt = await web3Godwoken.eth.sendTransaction(txData);
+            //console.log("Receipt", receipt);
+
+            try {
+              if (receipt.status) {
+                await client.connect();
+                //console.log("Connected correctly to server");
+                const db = client.db(process.env.DB_NAME);
+                // Use the collection "people"
+                const col = db.collection("crosschain_nfts");
+                // Construct a document
+                let crosschainNFTDocument = {
+                  from: sender,
+                  to: sender, // May 23, 1912
+                  collectionAddress: collectionAddress,
+                  collectionName: collectionName,
+                  tokenId: tokenID,
+                  count: tamount,
+                  metatdata_uri: uri,
+                  fromChain: "80001",
+                  toChain: destinationChainId,
+                  timestamp: Date.now(),
+                };
+                // Insert a single document, wait for promise so we can read it back
+                const p = await col.insertOne(crosschainNFTDocument);
+                // Find one document
+                const myDoc = await col.findOne();
+                // Print to the console
+                //console.log(myDoc);
+              }
+            } catch (err) {
+              console.log(err.stack);
+            } finally {
+              await client.close();
             }
-          } catch (err) {
-            console.log(err.stack);
-          } finally {
-            await client.close();
-          }
-          console.log(`Transaction hash: ${receipt.transactionHash}`);
-          console.log(`
+            console.log(`Transaction hash: ${receipt.transactionHash}`);
+            console.log(`
             Processed Cross chain NFT transfer:
             - from ${sender} 
             - to ${sender} 
             - tokenID ${tokenID} tokens
           `);
-          console.log(
-            collectionName +
-              " token transfer done from contract owner to user on Ethereum to Binance."
-          );
-        } else throw new Error("Ether gas transfer confirmation failed");
-      } catch (err) {
-        let { tamount, sender, collectionAddress, collectionName } =
-          event.returnValues;
-        console.log(err.name);
-        console.log(err.message);
-        console.log(err);
-      }
-    });
+            console.log(
+              collectionName +
+                " token transfer done from contract owner to user on Ethereum to Binance."
+            );
+          } else throw new Error("Ether gas transfer confirmation failed");
+        } catch (err) {
+          let { tamount, sender, collectionAddress, collectionName } =
+            event.returnValues;
+          console.log(err.name);
+          console.log(err.message);
+          console.log(err);
+        }
+      });
+  } catch (error) {
+    console.log("Error while listening");
+  }
 }
-fetchBlockNumber();
-try {
-  eventListener();
-} catch (error) {
-  eventListener();
-  console.log("Error", error);
-}
+
+export default eventListener;
+// try {
+//   async function call() {
+//     console.log("Event Listener started!");
+//     await eventListener();
+//   }
+//   call();
+// } catch (error) {
+//   async function call() {
+//     console.log("Event Listener started!");
+//     await eventListener();
+//   }
+//   call();
+//   console.log("Error :: ", error);
+// }

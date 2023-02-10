@@ -6,7 +6,8 @@ import bodyParser from "body-parser";
 import { eventRoute } from "./routes/event.js";
 import { nftRoutes } from "./routes/nft.js";
 dotenv.config();
-import "./EventListenerService/NFTEthereumEvents";
+//import "./EventListenerService/NFTEthereumEvents";
+import eventListener from "./EventListenerService/NFTEthereumEvents";
 
 const app = express();
 
@@ -30,10 +31,22 @@ app.use(function (req, res, next) {
 // Routes
 app.use(eventRoute);
 app.use(nftRoutes);
-
+let on = false;
 app.get("/", function (req, res) {
   //when we get an http get request to the root/homepage
-  res.send("Bridge Service is up and running!");
+  if (!on) {
+    // res.send("Bridge Service is up and running by True Analogy!");
+    res.status(200).json({ message: "Setup the listeners" });
+    try {
+      on = true;
+      eventListener();
+    } catch (error) {
+      on = false;
+      console.log("Errorr", error);
+    }
+  } else {
+    res.status(200).json({ message: "Already operating" });
+  }
 });
 
 const PORT = process.env.PORT || 5000;

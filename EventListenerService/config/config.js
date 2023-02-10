@@ -36,7 +36,7 @@ function web3EthereumProvider() {
     reconnect: {
       auto: true,
       delay: 5000, // ms
-      maxAttempts: 5,
+      maxAttempts: 100,
       onTimeout: true,
     },
     networkCheckTimeout: 20000,
@@ -45,6 +45,11 @@ function web3EthereumProvider() {
   return new Web3(
     new Web3WsProvider(process.env.ALCHEMY_POLYGON_MUMBAI_API_URL_WS, options)
   );
+  // return new Web3(
+  //   new Web3.providers.WebsocketProvider(
+  //     process.env.ALCHEMY_POLYGON_MUMBAI_API_URL_WS
+  //   )
+  // );
 }
 
 // WEB3 providers for catching events on Godwoken
