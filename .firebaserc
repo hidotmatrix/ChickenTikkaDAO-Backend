@@ -1,0 +1,13 @@
+{
+  "projects": {
+    "default": "startoken-project"
+  },
+  "targets": {},
+  "etags": {
+    "startoken-project": {
+      "extensionInstances": {
+        "moralis-streams": "30dc2d3851a59e5ef932ef83c58eedbc88a7f4edc5e692363ee033fc11e9d568"
+      }
+    }
+  }
+}
