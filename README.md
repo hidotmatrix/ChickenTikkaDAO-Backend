@@ -22,6 +22,10 @@ git clone https://github.com/hidotmatrix/RaspberryDAO-Backend.git
 
 ### Installation
 
+Follow these two youtube video to setup firebase and Moralis streams 
+[Link 1](https://www.youtube.com/watch?v=EieJVLhpvsI)
+[Link 2](https://www.youtube.com/watch?v=CUm-f2iwU3s&t=633s)
+
 ```bash
 cd RaspberryDAO-Backend
 npm install
@@ -38,62 +42,7 @@ This repository uses openzeppelin's modular system of Bridge
 
 ---
 
-### Smart contract Interaction
 
-#### Compile smart contracts
 
-```bash
-npx hardhat compile
-```
-
-#### Test smart contracts
-
-```bash
-npx hardhat test
-```
-
-#### Smart contract Deployment
-
-Create a .env file in the root directory and add the following variables
-
-- `MONGODB_URL = ""`
-- `RINKBEY_INFURA = ""`
-- `PORT = ""`
-Supported networks for deployment
-
-- `localhost`
-- `ropsten`
-- `rinkeby`
-- `goerli`
-- `polygon (mumbai testnet)`
-- `bsc testnet`
-
-##### Deploying GTP Token Smart Contract
-
-```bash
-npx hardhat run --network localhost scripts/deploy.js
-```
-
-#### Smart contract verification
-
-Add the following to your .env file
-
-> `ETHERSCAN_API_KEY = ""`
-
-```bash
-npx hardhat verify --network rinkbey DEPLOYED_CONTRACT_ADDRESS "Constructor argument 1"
-```
-
----
-
-### Backend/Bridge Service Interaction
-
-```bash
-npm run start
-```
-
-#### Wallet support
-
-Used rainbowkit for the wallet Interaction. [rainbowkit docs](https://www.rainbowkit.com/docs/introduction)
 
 
