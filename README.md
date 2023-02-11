@@ -28,7 +28,6 @@ Follow these two youtube video to setup firebase and Moralis streams
 
 ```bash
 cd RaspberryDAO-Backend
-npm install
 ```
 
 ---
