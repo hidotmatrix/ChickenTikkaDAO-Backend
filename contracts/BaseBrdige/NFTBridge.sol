@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "./GodwokenNFT.sol";
+import "./GodwokenNFTv1.sol";
 
 contract NFTCollectionBridgeWrapper is Ownable {
   
@@ -17,6 +17,8 @@ contract NFTCollectionBridgeWrapper is Ownable {
     address private gatewayAddress;
     address public godwokenNFTs;
     address public treasuryAddress;
+
+    uint public mintRound = 1;
 
     //mappings
     mapping(address => mapping(uint256 => uint256)) public tokenIdsMapOnGodwoken;
@@ -103,11 +105,18 @@ contract NFTCollectionBridgeWrapper is Ownable {
 
         uint256 newtokenId = IERC721Enumerable(godwokenNFTs).totalSupply() + 1;
 
-        GodwokenNFT(godwokenNFTs).safeMint(receiver);
+        RaspberryDAONFT(godwokenNFTs).safeMint(receiver);
 
         tokenIdsMapOnGodwoken[collectionAddress][_tokenID] = newtokenId;
 
         emit WITHDRAW(_tokenID, newtokenId, receiver, collectionAddress);
+        return true;
+    }
+
+    //Function to update godwokenNFTs minting address
+    function changeMintingGodwokenNFT(address _newGodwokenNFT) external onlyOwner returns (bool) {
+        godwokenNFTs = _newGodwokenNFT;
+        mintRound = mintRound + 1;
         return true;
     }
 
@@ -126,6 +135,17 @@ contract NFTCollectionBridgeWrapper is Ownable {
     {
         require(_newGatewayAddress != address(0), "Value cannot be 0");
         gatewayAddress = _newGatewayAddress;
+        return true;
+    }
+
+    //Function to change theGateway Address
+    function changeTreasuryAddress(address _newTreasuryAddress)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        require(_newTreasuryAddress != address(0), "Value cannot be 0");
+        treasuryAddress = _newTreasuryAddress;
         return true;
     }
 

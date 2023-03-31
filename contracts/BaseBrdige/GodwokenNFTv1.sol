@@ -7,70 +7,41 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract GodwokenNFT is
-    ERC721,
-    ERC721Enumerable,
-    AccessControl
-{
-
+contract RaspberryDAONFT is ERC721, ERC721Enumerable, AccessControl {
+    using Counters for Counters.Counter;
     using Strings for uint256;
 
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
-
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    Counters.Counter private _tokenIdCounter;
 
     string public baseExtension = ".json";
 
-    constructor() ERC721("MyToken", "MTK") {
+    string private baseURI = "ipfs://QmbHTmDYrtEJXcuJuzhNvp6m2PJexi9KVNweFDZi8Vfmm2/"; 
+
+    constructor() ERC721("RaspberryDAO NFT", "RDN") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
     }
 
-    function _baseURI() internal pure override returns (string memory) {
-        return "ipfs://QmVbZhfYHDyttyPjHQokVHVPYe7Bd5RdUrhxHoE6QimyYs/";
+    function _baseURI() internal view override returns (string memory) {
+        return baseURI;
     }
 
-    function addMinterRole(address _minter)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
-        _grantRole(MINTER_ROLE, _minter);
-    }
-
-    function safeMint(
-        address to
-    ) external onlyRole(MINTER_ROLE) {
-        _tokenIds.increment();
-        uint256 tokenId = _tokenIds.current();
+    function safeMint(address to) external onlyRole(MINTER_ROLE) {
+        _tokenIdCounter.increment();
+        uint256 tokenId = _tokenIdCounter.current();
         _safeMint(to, tokenId);
     }
 
-     function burn(
-        uint256 tokenId
-    ) external {
-       _burn(tokenId);
+    function addMinter(address _newMinter) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _grantRole(MINTER_ROLE, _newMinter);
     }
 
-
-    // The following functions are overrides required by Solidity.
-
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override(ERC721, ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId);
+    function updateURI(string memory _newURI) external onlyRole(DEFAULT_ADMIN_ROLE){
+          baseURI = _newURI;
     }
 
-    function _burn(uint256 tokenId)
-        internal
-        override(ERC721)
-    {
-        super._burn(tokenId);
-    }
-
-    function tokenURI(uint256 tokenId)
+     function tokenURI(uint256 tokenId)
         public
         view
         override(ERC721)
@@ -93,7 +64,15 @@ contract GodwokenNFT is
                 )
                 : "";
     }
-    
+
+    // The following functions are overrides required by Solidity.
+
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
+        internal
+        override(ERC721, ERC721Enumerable)
+    {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+    }
 
     function supportsInterface(bytes4 interfaceId)
         public
