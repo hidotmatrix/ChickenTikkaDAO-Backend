@@ -22,7 +22,7 @@ git clone https://github.com/hidotmatrix/RaspberryDAO-Backend.git
 
 ### Installation
 
-Follow these two youtube video to setup firebase and Moralis streams 
+Follow these two youtube video to setup firebase and Moralis streams
 [Link 1](https://www.youtube.com/watch?v=EieJVLhpvsI)
 [Link 2](https://www.youtube.com/watch?v=CUm-f2iwU3s&t=633s)
 
@@ -40,8 +40,3 @@ This repository uses openzeppelin's modular system of Bridge
 - [GodwokenNFT](https://github.com/hidotmatrix/RaspberryDAO-Backend/blob/develop/contracts/BaseBrdige/GodwokenNFT.sol): A godwoken side mintable NFT smart contract
 
 ---
-
-
-
-
-
