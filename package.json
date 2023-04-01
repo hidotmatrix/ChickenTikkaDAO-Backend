@@ -1,0 +1,26 @@
+{
+  "name": "raspberrydao-firebase-functions",
+  "version": "1.0.0",
+  "description": "RaspberryDAO-Backend Project is a Backend of RaspberryDAO ecosystem which is used to listen real time events emitted when users swap their NFTs using [RaspberryDAO-User-UI](https://github.com/hidotmatrix/RaspberryDAO-User-UI). This project act as real time even listeners whenever someone lock their NFTs into the bridge smart contracts, and later on getting events emtited , this service will automatically mints GodwokenNFTs on the userwallet addresses on Godwoken L2 chain.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hidotmatrix/RaspberryDAO-Backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hidotmatrix/RaspberryDAO-Backend/issues"
+  },
+  "homepage": "https://github.com/hidotmatrix/RaspberryDAO-Backend#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "hardhat": "^2.13.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.8.2"
+  }
+}
