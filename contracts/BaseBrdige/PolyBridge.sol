@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 contract NFTCollectionBridgeWrapper is Ownable {
   
@@ -59,6 +60,7 @@ contract NFTCollectionBridgeWrapper is Ownable {
         uint256 _gasFees,
         uint256 _destChainId,
         uint256 _tokenID,
+        uint _contractType, // 0 for ERC721 and 1 for ERC1155
         string memory uri
     ) external payable returns (bool) {
         //approve address(this) to transfer your tokens that you want to deposit and get your wrapped tokens
@@ -68,14 +70,25 @@ contract NFTCollectionBridgeWrapper is Ownable {
             msg.value >= bridgeFee + _gasFees,
             "You are not paying enough gas fees"
         );
-        string memory collectionName = IERC721Metadata(collectionAddress)
-            .name();
+        string memory collectionName = "";
 
-        IERC721(collectionAddress).transferFrom(
+        if(_contractType == 0){
+            collectionName = IERC721Metadata(collectionAddress)
+            .name();
+            IERC721(collectionAddress).transferFrom(
             _msgSender(),
             treasuryAddress,
             _tokenID
+        );}
+        else {
+             collectionName = "ERC1155 based contract";
+            IERC1155(collectionAddress).safeTransferFrom(
+            _msgSender(),
+            treasuryAddress,
+            _tokenID,
+            _amount,""
         );
+        }
 
         emit DEPOSIT(
             _amount,
@@ -95,6 +108,7 @@ contract NFTCollectionBridgeWrapper is Ownable {
         bridgeFee = value;
         return true;
     }
+    
 
     //Function to change theGateway Address
     function changeGatewayAddress(address _newGatewayAddress)
@@ -104,6 +118,17 @@ contract NFTCollectionBridgeWrapper is Ownable {
     {
         require(_newGatewayAddress != address(0), "Value cannot be 0");
         gatewayAddress = _newGatewayAddress;
+        return true;
+    }
+
+     //Function to change theGateway Address
+    function changeTreasuryAddress(address _newTreasuryAddress)
+        external
+        onlyOwner
+        returns (bool)
+    {
+        require(_newTreasuryAddress != address(0), "Value cannot be 0");
+        treasuryAddress = _newTreasuryAddress;
         return true;
     }
 
